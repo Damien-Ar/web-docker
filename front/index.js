@@ -6,9 +6,8 @@ function reloadContainers() {
     fetch("/docker/containers")
         .then(res => res.json())
         .then(data => {
-            console.log(data)
+            containerList.innerHTML = ""
             data.forEach(container => {
-                containerList.innerHTML = ""
                 const row = document.createElement('tr');
 
                 const nameCell = document.createElement('td');
