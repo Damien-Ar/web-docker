@@ -38,18 +38,26 @@ app.get('/docker/containers', async (req, res) => {
 
 app.post('/docker/containers', async (req, res) => {
   const container = docker.getContainer(req.body.containerName)
-  console.log(container)
-  container.start()
+  try {
+    container.start()
+  }
+  catch (error) {
+    res.status(500).send()
+  }
   res.send()
 });
 
 app.delete('/docker/containers', async (req, res) => {
   const container = docker.getContainer(req.body.containerName)
-  console.log(container)
-  container.stop()
+  try {
+    container.stop()
+  }
+  catch (error) {
+    res.status(500).send()
+  }
   res.send()
 });
 
 app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+  console.log(`Server is running on port ${port}`);
 });
