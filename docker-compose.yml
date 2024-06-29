@@ -1,5 +1,6 @@
 services: 
   docker-controller:
+    container_name: web-docker
     build: .
     ports:
       - 3000:3000
