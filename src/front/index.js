@@ -1,5 +1,3 @@
-// Assuming the data is in JSON format and stored in a variable called 'data'
-
 const containerList = document.getElementById('containerList');
 
 function reloadContainers() {
@@ -15,25 +13,16 @@ function reloadContainers() {
                 row.appendChild(nameCell);
 
                 const statusCell = document.createElement('td');
+                statusCell.setAttribute("data-container-status", container.name)
                 statusCell.textContent = container.status;
                 row.appendChild(statusCell);
 
                 const actionCell = document.createElement('td');
-                const actionButton = document.createElement('button')
-                if(container.status === "running") {
-                    actionButton.textContent = "Stop container"
-                    actionButton.classList.add("stop-button")
-                    actionButton.addEventListener("click", () => askForKillContainer(container.name))
-                }
-                else {
-                    actionButton.textContent = "Start container"
-                    actionButton.classList.add("start-button")
-                    actionButton.addEventListener("click", () => askForStartContainer(container.name))
-                }
-                actionCell.appendChild(actionButton)
+                actionCell.setAttribute("data-container-action", container.name)
                 row.appendChild(actionCell);
 
                 containerList.appendChild(row);
+                updateStatusOfContainer(container.name, container.status)
             });
         })
 }
@@ -48,12 +37,33 @@ function getRequestConfig(containerName, method){
   }
 }
 
+function updateStatusOfContainer(containerName, status) {
+  document.querySelector(`[data-container-status='${containerName}']`).innerText = status
+  const actionCell = document.querySelector(`[data-container-action='${containerName}']`)
+  if(status === "running") {
+    const actionButton = document.createElement('button')
+    actionButton.textContent = "Stop container"
+    actionButton.classList.add("stop-button")
+    actionButton.addEventListener("click", () => askForKillContainer(containerName))
+    actionCell.appendChild(actionButton)
+  }
+  else if (status === "exited") {
+    const actionButton = document.createElement('button')
+    actionButton.textContent = "Start container"
+    actionButton.classList.add("start-button")
+    actionButton.addEventListener("click", () => askForStartContainer(containerName))
+    actionCell.appendChild(actionButton)
+  }
+  else {
+    actionCell.innerHTML = ""
+  }
+}
+
 function askForKillContainer(containerName){
   fetch(`/docker/containers`, getRequestConfig(containerName, "DELETE"))
     .then(res => {
-      console.log(res.status)
       if(res.status == 200) {
-        reloadContainers()
+        updateStatusOfContainer(containerName, "stopping")
       }
       else {
         alert(`Echec de l'arrêt du conteneur ${containerName}`)
@@ -68,18 +78,20 @@ function askForKillContainer(containerName){
 function askForStartContainer(containerName){
   fetch(`/docker/containers`, getRequestConfig(containerName, "POST"))
     .then(res => {
-      console.log(res.status)
       if(res.status == 200) {
-        reloadContainers()
+        updateStatusOfContainer(containerName, "starting")
       }
       else {
-        alert(`Echec ddu démarage du conteneur ${containerName}`)
+        alert(`Echec du démarage du conteneur ${containerName}`)
       }
     })
     .catch(err => {
       console.error(err)
-      alert(`Echec ddu démarage du conteneur ${containerName}`)
+      alert(`Echec du démarage du conteneur ${containerName}`)
     })
 }
 
-reloadContainers()    
+reloadContainers()   
+setInterval(() => {
+  reloadContainers()
+}, 10000) 

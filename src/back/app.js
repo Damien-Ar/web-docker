@@ -38,24 +38,22 @@ app.get('/docker/containers', async (req, res) => {
 
 app.post('/docker/containers', async (req, res) => {
   const container = docker.getContainer(req.body.containerName)
-  try {
-    container.start()
-  }
-  catch (error) {
-    res.status(500).send()
-  }
-  res.send()
+  container.start()
+    .then(() => res.send())
+    .catch((err) => {
+      console.error(err)
+      res.status(500).send()
+    })
 });
 
 app.delete('/docker/containers', async (req, res) => {
   const container = docker.getContainer(req.body.containerName)
-  try {
-    container.stop()
-  }
-  catch (error) {
-    res.status(500).send()
-  }
-  res.send()
+  container.stop()
+    .then(() => res.send())
+    .catch((err) => {
+      console.error(err)
+      res.status(500).send()
+    })
 });
 
 app.listen(port, () => {
